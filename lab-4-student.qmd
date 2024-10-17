@@ -1,8 +1,9 @@
 ---
 title: "Lab 4: Childcare Costs in California"
-author: "Your name here!"
+author: "Stella Raymond"
 format: html
 editor: source
+code-folding: true
 embed-resources: true
 ---
 
@@ -17,11 +18,14 @@ The data come to us from [TidyTuesday](https://github.com/rfordatascience/tidytu
 
 ```{r}
 #| label: setup
-
+#| message: false
+library(tidyverse)
+library(forcats)
 ```
 
 ```{r}
 #| label: load-data
+#| message: false
 
 childcare_costs <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-05-09/childcare_costs.csv')
 
@@ -29,6 +33,7 @@ counties <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytues
 ```
 
 **1. Briefly describe the dataset (~ 4 sentences). What information does it contain?**
+There are two datasets provided, one including counties across america with their fips code and state while the other is a 
 
 ## California Childcare Costs
 
@@ -39,7 +44,13 @@ Let's start by focusing only on California.
 
 ```{r}
 #| label: ca-childcare-costs
-
+ca_childcare <- counties |>
+  filter(state_abbreviation == "CA"
+         ) |>
+  left_join(childcare_costs,
+            by = join_by(county_fips_code == county_fips_code
+                         )
+            )
 ```
 
 **3. Using a function from the `forcats` package, complete the code below to create a new variable where each county is categorized into one of the [10 Census regions](https://census.ca.gov/regions/) in California. Use the Region description (from the plot), not the Region number.**  
@@ -49,8 +60,22 @@ Let's start by focusing only on California.
 #| label: recoding-county-to-census-regions
 
 ca_childcare <- ca_childcare |> 
-  mutate(county_name = str_remove(county_name, " County")) |>
-  ...
+  mutate(county_name = str_remove(county_name, 
+                                  " County"),
+         region = fct_collapse(county_name,
+                               "Superior California" = c("Butte", "Colusa", "El Dorado", "Glenn", "Lassen", "Modoc", "Nevada", "Plumas", "Sacramento", "Shasta", "Sierra", "Siskiyou", "Sutter", "Tehama", "Yolo", "Yuba", "Placer"),
+                               "San Francisco Bay Area" = c("Alameda", "Contra Costa", "Marin", "San Francisco", "San Mateo", "Santa Clara", "Solano"),
+                               "North Coast" = c("Del Norte", "Humboldt", "Lake", "Mendocino", "Napa", "Sonoma", "Trinity"),
+                               "Orange County" = c("Orange"),
+                               "Central Coast" = c("Monterey", "San Benito", "San Luis Obispo", "Santa Barbara", "Santa Cruz", "Ventura"),
+                               "Northern San Joaquin Valley" = c("Alpine", "Amador", "Calaveras", "Madera", "Mariposa", "Merced", "Mono", "San Joaquin", "Stanislaus", "Tuolumne"),
+                               "Los Angeles County" = c("Los Angeles"),
+                               "Southern San Joaquin Valley" = c("Fresno", "Kern", "Kings", "Inyo", "Tulare"),
+                               "Inland Empire" = c("Riverside", "San Bernardino"),
+                               "San Diego Imperia" = c("San Diego", "Imperial")
+  )
+  )
+  
 ```
 
 
