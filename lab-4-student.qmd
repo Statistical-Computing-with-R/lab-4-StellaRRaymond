@@ -60,6 +60,7 @@ I utilized the ChatGPT output shared on the discord and edited where I needed to
 
 ```{r}
 #| label: recoding-county-to-census-regions
+#| message: false
 
 ca_childcare <- ca_childcare |> 
   mutate(county_name = str_remove(county_name, 
@@ -165,9 +166,39 @@ Yes, this region corresponds with the lowest median income in the previous quest
 
 ![Plot to recreate](https://atheobold.github.io/groupworthy-data-science/labs/instructions/images/lab-4-recreate-plot.png)
 
+ mutate(age = fct(age),
+         age = fct_recode(.f = age,
+                            "mc_infant" = "Infant",
+                            "mc_toddler" = "Toddler",
+                            "mc_preschool" = "Preschool")) |>
+  fct(levels = c("Infant","Toddler","Preschool"))|>
+
 ```{r}
 #| label: recreate-plot
-
+ca_childcare |>
+  select(region, 
+         study_year, 
+         mc_infant,
+         mc_toddler,
+         mc_preschool) |>
+  pivot_longer(cols = mc_infant:mc_preschool,
+               names_to = "age",
+               values_to = "price") |>
+  mutate(age = fct_recode(.f = age,
+                            "mc_infant" = "Infant",
+                            "mc_toddler" = "Toddler",
+                            "mc_preschool" = "Preschool"),
+         age = fct_reorder(age, c("Infant","Toddler","Preschool")))|>
+  ggplot(mapping = aes(x = study_year,
+                       y = price,
+                       color = region))+
+  geom_smooth() +
+  geom_point() +
+  facet_wrap(~age) +
+  labs(x = "Study Year",
+       y = "",
+       title = "Weekly Median Price for Center-Based Childcare ($)")
+  
 ```
 
 
@@ -177,6 +208,22 @@ Yes, this region corresponds with the lowest median income in the previous quest
 
 ```{r}
 #| label: scatterplot-median-income-vs-childcare-cost
+ca_childcare |>
+  filter(study_year == "2018") |>
+  select(mhi_2018,
+         mc_infant,
+         study_year,
+         region) |>
+  ggplot(mapping = aes(x = mhi_2018, 
+                       y = mc_infant,
+                       color = region))+
+  geom_point()+
+  geom_smooth(method = lm, 
+              color = "green4")+
+  labs(title = "Household Income and Weekly Price of 2018 Center-Based Infant Childcare",
+       x = "Median Weekly Household Income ($)",
+       y = "",
+       subtitle = "Y-axis representing Full-Time Median Weekly Price ($)")
 
 ```
 
